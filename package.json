@@ -7,7 +7,7 @@
 		"url": "https://github.com/freeCodeCamp/boilerplate-project-exercisetracker"
 	},
 	"scripts": {
-		"start": "node dist/index.js",
+		"start": "npx tsc && node dist/index.js",
 		"dev": "nodemon src/index.ts",
 		"build": "tsc"
 	},
