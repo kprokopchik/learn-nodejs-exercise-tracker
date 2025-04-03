@@ -1,6 +1,7 @@
 import { open } from "sqlite";
 import sqlite3 from "sqlite3";
 import { CreatedExerciseResponse, Exercise, User } from "../model";
+import { BadRequestError } from "../model/exceptions";
 
 const dbConnection = open({
   filename: "./database.sqlite",
@@ -35,19 +36,26 @@ dbConnection.then(async (db) => {
 
 export async function createUser(username: string): Promise<User> {
   const db = await dbConnection;
-  const result = await db.get(
-    `
-    INSERT INTO users (username) VALUES ($username)
-    RETURNING id
-    `,
-    {
-      $username: username,
+  try {
+    const result = await db.get(
+      `
+      INSERT INTO users (username) VALUES ($username)
+      RETURNING id
+      `,
+      {
+        $username: username,
+      }
+    );
+    return {
+      id: result.id as number,
+      username,
+    } as User;
+  } catch (error: any) {
+    if (String(error.message ?? '').includes('SQLITE_CONSTRAINT')) {
+      throw new BadRequestError(409, `User already exists with username: ${username}`);
     }
-  );
-  return {
-    id: result.id as number,
-    username,
-  } as User;
+    throw error;
+  }
 }
 
 export async function getAllUsers(): Promise<User[]> {
@@ -119,14 +127,6 @@ export async function getExercises(
     WHERE user_id = $userId
     `;
   let params = { $userId: userId } as any;
-  if (!!limit) {
-    sql += " LIMIT $limit";
-    params = { $limit: limit, ...params };
-  }
-  if (!!offset) {
-    sql += " OFFSET $offset";
-    params = { $offset: offset, ...params };
-  }
   if (!!from) {
     sql += " AND date >= $from";
     params = { $from: from, ...params };
@@ -134,6 +134,14 @@ export async function getExercises(
   if (!!to) {
     sql += " AND date <= $to";
     params = { $to: to, ...params };
+  }
+  if (!!limit) {
+    sql += " LIMIT $limit";
+    params = { $limit: limit, ...params };
+  }
+  if (!!offset) {
+    sql += " OFFSET $offset";
+    params = { $offset: offset, ...params };
   }
   console.log("execute", sql, "with", params);
   const exercises = await db.all(sql, params);

@@ -1,0 +1,209 @@
+openapi: 3.0.1
+info:
+  title: Legal Service OpenAPI definition
+  version: 0.0.1
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /api/users:
+    get:
+      summary: Get all users.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create a new user.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - username
+              properties:
+                username:
+                  type: string
+                  minLength: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /api/users/{_id}:
+    get:
+      summary: Get user by id.
+      parameters:
+        - name: _id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /api/users/name/{username}:
+    get:
+      summary: Get user by username.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+
+  /api/users/{_id}/exercises:
+    post:
+      summary: Add user exercise.
+      parameters:
+        - name: _id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - description
+                - duration
+              properties:
+                description:
+                  type: string
+                  minLength: 1
+                duration:
+                  type: integer
+                  minimum: 1
+                date:
+                  type: string
+                  example: 2025-04-01
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedExerciseResponse'
+
+  /api/users/{_id}/logs:
+    get:
+      summary: Get user exercises.
+      parameters:
+        - name: _id
+          in: path
+          required: true
+          description: User id.
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Limit number of exercises to fetch.
+          schema:
+            type: integer
+            minimum: 1
+        - name: offset
+          in: query
+          description: Offset for pagination.
+          schema:
+            type: integer
+            minimum: 0
+        - name: from
+          in: query
+          description: Starting date (inclusive) to use as filter in format YYYY-MM-DD.
+          schema:
+            type: string
+            example: 2025-04-01
+        - name: to
+          in: query
+          description: Ending date (inclusive) to use as filter in format YYYY-MM-DD.
+          schema:
+            type: string
+            example: 2025-04-01
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserExerciseLog'
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          type: number
+          description: The auto-generated id of the user
+        username:
+          type: string
+          description: Unique username
+    CreatedExerciseResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The auto-generated id of the exercise
+        userId:
+          type: integer
+        duration:
+          type: integer
+        description:
+          type: string
+        date:
+          type: string
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The auto-generated id of the exercise
+        duration:
+          type: integer
+        description:
+          type: string
+        date:
+          type: string
+    UserExerciseLog:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exercise'
+        count:
+          type: integer

@@ -1,12 +1,19 @@
 import { dao } from "../db/dao";
 import { CreatedExerciseResponse, Exercise, User } from "../model";
-import { NotFoundError } from "../model/exceptions";
+import { BadRequestError, NotFoundError } from "../model/exceptions";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 function validateDateOptional(date?: string) {
-  if (!!date && !datePattern.test(date)) {
-    throw new Error("malformed date (must be in format: YYYY-MM-DD): " + date);
+  if (!date) {
+    return;
+  }
+  if (!datePattern.test(date)) {
+    throw new BadRequestError(400, "malformed `date` (must be in format: YYYY-MM-DD): " + date);
+  }
+  const td = new Date(date);
+  if (isNaN(td.getTime()) || date !== td.toISOString().split("T")[0]) {
+    throw new BadRequestError(400, "Invalid `date` value: " + date);
   }
 }
 
@@ -14,10 +21,7 @@ export async function getAllUsers(): Promise<User[]> {
   return await dao.getAllUsers();
 }
 
-export async function createNewUser(username?: string): Promise<User> {
-  if (!username) {
-    throw new Error("username is required");
-  }
+export async function createNewUser(username: string): Promise<User> {
   console.log("registering user: ", username);
   return (await dao.createUser(username)) as User;
 }
@@ -46,12 +50,6 @@ export async function getUserExercises(
   to?: string
 ): Promise<Exercise[]> {
   console.log("fetching exercises for: ", userId);
-  if (limit !== undefined && (limit <= 0 || !Number.isInteger(limit))) {
-    throw new Error("limit must be a positive integer");
-  }
-  if (offset !== undefined && (offset < 0 || !Number.isInteger(offset))) {
-    throw new Error("offset must be a non-negative integer");
-  }
   validateDateOptional(from);
   validateDateOptional(to);
   if ((await dao.getUserById(userId)) === undefined) {
@@ -71,15 +69,9 @@ export async function countUserExercises(userId: number): Promise<number> {
 export async function addExercise(
   userId: number,
   description: string,
-  duration: number,
+  duration: string,
   date?: string
 ): Promise<CreatedExerciseResponse> {
-  if (!description) {
-    throw new Error("description is required");
-  }
-  if (!duration) {
-    throw new Error("duration is required");
-  }
   validateDateOptional(date);
   if ((await dao.getUserById(userId)) === undefined) {
     throw new NotFoundError(`user not found: ${userId}`);
@@ -91,6 +83,11 @@ export async function addExercise(
     const day = dt.getDate().toString().padStart(2, "0");
     date = `${year}-${month}-${day}`;
   }
-  console.log(userId, " adding exercise: ");
-  return await dao.insertExercise(userId, { description, duration, date } as Exercise);
+  const exercise = { 
+    description, 
+    duration: Number(duration), 
+    date 
+  } as Exercise;
+  console.log(userId, " adding exercise:", exercise);
+  return await dao.insertExercise(userId, exercise);
 }

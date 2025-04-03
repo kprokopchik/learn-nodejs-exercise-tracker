@@ -19,7 +19,7 @@
       <form action="/api/users/:_id/exercises" id="exercise-form" method="post">
         <h2>Add exercises</h2>
         <p><code>POST /api/users/:_id/exercises</code></p>
-        <input id="uid" type="number" name=":_id" placeholder=":_id" />
+        <input id="uid" type="text" name="_id" placeholder=":_id" />
         <input id="desc" type="text" name="description" placeholder="description*" />
         <input id="dur" type="text" name="duration" placeholder="duration* (mins.)" />
         <input id="date" type="text" name="date" placeholder="date (yyyy-mm-dd)" />
@@ -28,8 +28,8 @@
       <form action="/api/users/:_id/logs" id="logs-form" method="get">
         <h2>Get logs</h2>
         <p><code>GET /api/users/:_id/logs</code></p>
-        <input id="logs-uid" type="number" name=":_id" placeholder=":_id" />
-        <input id="logs-limit" type="number" name="limit" placeholder="limit" />
+        <input id="logs-uid" type="text" name="_id" placeholder=":_id" />
+        <input id="logs-limit" type="text" name="limit" placeholder="limit" />
         <input id="logs-from" type="text" name="from" placeholder="date (yyyy-mm-dd)" />
         <input id="logs-to" type="text" name="to" placeholder="date (yyyy-mm-dd)" />
         <input id="get-log-btn" type="button" value="Execute" />
@@ -69,8 +69,8 @@
           .then(async (response) => {
             const ul = document.getElementById('user-log');
             ul.innerHTML = '';
-            const exercises = await response.json().logs;
-            exercises.forEach(exercise => {
+            const data = await response.json();
+            data.logs.forEach(exercise => {
               ul.innerHTML += '<li>' + JSON.stringify(exercise) +'</li>';
             });
           });
