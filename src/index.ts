@@ -42,7 +42,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Validate requests against OpenAPI schema
 app.use(
   OpenApiValidator.middleware({
-    apiSpec: path.join(__dirname, "./openapi-spec.yaml"),
+    apiSpec: path.join(__dirname, "../public/openapi-spec.yaml"),
     validateRequests: true,
     validateResponses: false,
     ignorePaths: (path: string) => path.startsWith("/api-docs"),
