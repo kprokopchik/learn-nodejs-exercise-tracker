@@ -51,7 +51,7 @@ export async function createUser(username: string): Promise<User> {
       username,
     } as User;
   } catch (error: any) {
-    if (String(error.message ?? '').includes('SQLITE_CONSTRAINT')) {
+    if (String(error.message ?? "").includes("SQLITE_CONSTRAINT")) {
       throw new BadRequestError(409, `User already exists with username: ${username}`);
     }
     throw error;
@@ -156,16 +156,23 @@ export async function getExercises(
   );
 }
 
-export async function countExercises(userId: number): Promise<number> {
+export async function countExercises(userId: number, from?: string, to?: string): Promise<number> {
   const db = await dbConnection;
-  const sql = `
+  let sql = `
     SELECT count(*) as n FROM exercises 
     WHERE user_id = $userId
     `;
+  let params = { $userId: userId } as any;
+  if (!!from) {
+    sql += " AND date >= $from";
+    params = { $from: from, ...params };
+  }
+  if (!!to) {
+    sql += " AND date <= $to";
+    params = { $to: to, ...params };
+  }
   console.log("execute", sql);
-  const result = await db.get(sql, {
-    $userId: userId,
-  });
+  const result = await db.get(sql, params);
   return result.n;
 }
 

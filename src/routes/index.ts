@@ -51,7 +51,7 @@ usersApiRouter.get("/:_id/logs", async (request: Request, response: Response) =>
   const from = request.query.from ? request.query.from.toString() : undefined;
   const to = request.query.to ? request.query.to.toString() : undefined;
   const logs = await getUserExercises(userId, limit, offset, from, to);
-  const count = await countUserExercises(userId);
+  const count = await countUserExercises(userId, from, to);
   response.send({
     logs,
     count,

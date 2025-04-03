@@ -58,12 +58,16 @@ export async function getUserExercises(
   return await dao.getExercises(userId, limit, offset, from, to);
 }
 
-export async function countUserExercises(userId: number): Promise<number> {
+export async function countUserExercises(
+  userId: number,
+  from?: string,
+  to?: string
+): Promise<number> {
   console.log("counting exercises for: ", userId);
   if ((await dao.getUserById(userId)) === undefined) {
     throw new NotFoundError(`user not found: ${userId}`);
   }
-  return await dao.countExercises(userId);
+  return await dao.countExercises(userId, from, to);
 }
 
 export async function addExercise(
@@ -83,10 +87,10 @@ export async function addExercise(
     const day = dt.getDate().toString().padStart(2, "0");
     date = `${year}-${month}-${day}`;
   }
-  const exercise = { 
-    description, 
-    duration: Number(duration), 
-    date 
+  const exercise = {
+    description,
+    duration: Number(duration),
+    date,
   } as Exercise;
   console.log(userId, " adding exercise:", exercise);
   return await dao.insertExercise(userId, exercise);
