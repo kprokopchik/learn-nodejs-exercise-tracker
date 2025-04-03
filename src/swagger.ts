@@ -10,7 +10,7 @@ const options: swaggerJsdoc.Options = {
       version: "0.0.1"
     },
   },
-  apis: ["./src/openapi-spec.yaml"],
+  apis: ["./public/openapi-spec.yaml"],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
