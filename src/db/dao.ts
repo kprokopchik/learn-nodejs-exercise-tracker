@@ -135,6 +135,7 @@ export async function getExercises(
     sql += " AND date <= $to";
     params = { $to: to, ...params };
   }
+  sql += " ORDER BY date";
   if (!!limit) {
     sql += " LIMIT $limit";
     params = { $limit: limit, ...params };
@@ -171,7 +172,7 @@ export async function countExercises(userId: number, from?: string, to?: string)
     sql += " AND date <= $to";
     params = { $to: to, ...params };
   }
-  console.log("execute", sql);
+  console.log("execute", sql, "with", params);
   const result = await db.get(sql, params);
   return result.n;
 }
